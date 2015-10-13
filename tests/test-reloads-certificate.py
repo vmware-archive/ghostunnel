@@ -8,11 +8,11 @@ import socket, ssl, time, os
 
 if __name__ == "__main__":
   ghostunnel = None
+  certs = ['root', 'server', 'new_server', 'client1']
   try:
     # Step 1: create certs
     create_root_cert('root')
     create_signed_cert('server', 'root')
-    create_signed_cert('new_server', 'root')
     create_signed_cert('client1', 'root')
 
     # Step 2: start ghostunnel
@@ -21,24 +21,28 @@ if __name__ == "__main__":
       '--storepass=', '--cacert=root.crt', '--allow-ou=client1', '--auto-reload'])
 
     # Step 3: create connections with client1
-    pair1 = SocketPair('client1', 13001, 13000)
+    pair1 = SocketPair('client1', 'server', 13001, 13000)
     pair1.validate_can_send_from_client("toto", "pair1 works")
     pair1.validate_tunnel_ou("server", "pair1 -> ou=server")
 
-    # Move new_server.p12 to server.p12 and give the tunnel 1s to read the file
-    os.rename('new_server.p12', 'server.p12')
-    time.sleep(1)
+    # Create new_serverN.p12 and move to server.p12. Give the tunnel 1s to read
+    # the file
+    for i in range(1, 5):
+      create_signed_cert("new_server_{0}".format(i), 'root')
+      certs.append("new_server_{0}".format(i))
 
-    # Step 4: create connections with client1
-    pair2 = SocketPair('client1', 13001, 13000)
-    pair2.validate_can_send_from_client("toto", "pair2 works")
-    pair2.validate_tunnel_ou("new_server", "pair2 -> ou=new_server")
+      os.rename("new_server_{0}.p12".format(i), 'server.p12')
 
-    # Step 5: ensure that pair1 is still alive
-    pair1.validate_can_send_from_client("toto", "pair1 still works")
+      # Step 4: create connections with client1
+      pair2 = SocketPair('client1', 'server', 13001, 13000)
+      pair2.validate_can_send_from_client("toto", "pair2 works")
+      pair2.validate_tunnel_ou("new_server_{0}".format(i), "pair2 -> ou=new_server_{0}".format(i))
+
+      # Step 5: ensure that pair1 is still alive
+      pair1.validate_can_send_from_client("toto", "pair1 still works")
 
     print_ok("OK")
   finally:
     if ghostunnel:
       ghostunnel.kill()
-    cleanup_certs(['root', 'server', 'new_server', 'client1'])
+    cleanup_certs(certs)

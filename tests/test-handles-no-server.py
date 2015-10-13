@@ -22,13 +22,13 @@ if __name__ == "__main__":
 
     # Step 3: client should fail to connect since nothing is listening on 13002
     try:
-      pair = SocketPair('client1', 13001, 13002)
+      pair = SocketPair('client1', 'server', 13001, 13002)
     except socket.timeout:
       print_ok("timeout when nothing is listening on 13000")
 
     # Step 4: client should connect
     try:
-      pair = SocketPair('client1', 13001, 13000)
+      pair = SocketPair('client1', 'server', 13001, 13000)
     except socket.timeout:
       print_ok("timeout when nothing is listening on 13000")
 

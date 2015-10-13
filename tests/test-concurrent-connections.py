@@ -48,7 +48,7 @@ if __name__ == "__main__":
     # Step 3: clients should be able to communicate all at the same time.
     proc = []
     for i in range(1, n_clients):
-      pair = SocketPair("client{0}".format(i), 13001, 13000)
+      pair = SocketPair("client{0}".format(i), 'server', 13001, 13000)
       p = Process(target=send_data, args=(i,pair,))
       p.start()
       proc.append(p)

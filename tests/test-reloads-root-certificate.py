@@ -22,10 +22,10 @@ if __name__ == "__main__":
       '--storepass=', '--cacert=root.crt', '--allow-ou=client1', '--allow-ou=client2', '--auto-reload'])
 
     # Step 3: create connections with client1 and client2
-    pair1 = SocketPair('client1', 13001, 13000)
+    pair1 = SocketPair('client1', 'server', 13001, 13000)
     pair1.validate_can_send_from_client("toto", "pair1 works")
 
-    pair2 = SocketPair('client2', 13001, 13000)
+    pair2 = SocketPair('client2', 'server', 13001, 13000)
     pair2.validate_can_send_from_client("toto", "pair2 works")
 
     # Step 4: re-new the server and client1 certs
@@ -38,19 +38,15 @@ if __name__ == "__main__":
     create_signed_cert('client1', 'root')
     print_ok("re-created client1")
 
-    # TODO: figure out a more reliable way to tell that the tunnel picked up
-    # the new cert.
-    time.sleep(1)
-
     # Step 5: ensure that client1 can connect
-    pair3 = SocketPair('client1', 13001, 13000)
+    pair3 = SocketPair('client1', 'server', 13001, 13000)
     pair3.validate_can_send_from_client("toto", "pair3 works")
 
     # Step 6: ensure that client2 cannot connect
     try:
-      pair4 = SocketPair('client2', 13001, 13000)
+      pair4 = SocketPair('client2', 'server', 13001, 13000)
       raise Exception('client2 was able to connect')
-    except ssl.SSLError:
+    except Exception:
       print_ok("client2 failed to connect")
 
     # Step 7: ensure that pair1 and pair2 are still alive

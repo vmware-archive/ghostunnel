@@ -22,7 +22,7 @@ if __name__ == "__main__":
       '--storepass=', '--cacert=root.crt', '--allow-ou=client1'])
 
     # Step 3: connect with client1, confirm that the tunnel is up
-    pair = SocketPair('client1', 13001, 13000)
+    pair = SocketPair('client1', 'server', 13001, 13000)
     pair.validate_can_send_from_client("hello world", "1: client -> server")
     pair.validate_can_send_from_server("hello world", "1: server -> client")
     pair.validate_closing_client_closes_server("1: client closed -> server closed")
