@@ -32,7 +32,8 @@ before_install:
   - go get github.com/karalabe/xgo
 
 install:
-  # Compile with CGO on/off for testing
+  # Compile with various settings for testing
+  - make ghostunnel
   - CGO_ENABLED=0 go build -o ghostunnel-${TRAVIS_TAG}-linux-amd64-without-pkcs11 .
   - CGO_ENABLED=1 go build -o ghostunnel-${TRAVIS_TAG}-linux-amd64-with-pkcs11 .
   # Build Docker container

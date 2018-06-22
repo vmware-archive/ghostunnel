@@ -2,9 +2,17 @@ SOURCE_FILES := $(shell find . \( -name '*.go' -not -path './vendor/*' \))
 INTEGRATION_TESTS := $(shell find tests -name 'test-*.py' -exec basename {} .py \;)
 VERSION := $(shell git describe --always --dirty)
 
+BUILD_TAGS := ''
+ifeq ($(shell uname),Darwin)
+ifeq ($(shell test `sw_vers -productVersion | cut -d'.' -f2` -ge 12; echo $$?),0)
+	# Set certstore build tag if we're on a supported version of macOS (10.12+)
+	BUILD_TAGS = -tags certstore
+endif
+endif
+
 # Ghostunnel binary
 ghostunnel: $(SOURCE_FILES)
-	go build -ldflags '-X main.version=${VERSION}' -o ghostunnel .
+	go build ${BUILD_TAGS} -ldflags '-X main.version=${VERSION}' -o ghostunnel .
 
 # Test binary with coverage instrumentation
 ghostunnel.test: $(SOURCE_FILES)
