@@ -35,6 +35,41 @@ func (t *testLogger) Printf(format string, v ...interface{}) {
 	fmt.Fprintf(os.Stderr, format+"\n", v...)
 }
 
+type badListener struct{}
+
+func (b *badListener) Accept() (net.Conn, error) {
+	return nil, errors.New("failure for test")
+}
+
+func (b *badListener) Close() error {
+	return nil
+}
+
+func (b *badListener) Addr() net.Addr {
+	return nil
+}
+
+func TestBadListener(t *testing.T) {
+	p := New(&badListener{}, 60*time.Second, nil, &testLogger{})
+	go p.Accept()
+
+	recordedError := false
+	for i := 0; i < 100; i++ {
+		errors := errorCounter.Count()
+		if errors > 0 {
+			recordedError = true
+			break
+		}
+		time.Sleep(1 * time.Second)
+	}
+
+	if !recordedError {
+		t.Error("should record error if listener reported failure")
+	}
+
+	p.Shutdown()
+}
+
 func TestMultipleShutdownCalls(t *testing.T) {
 	ln, err := net.Listen("tcp", "127.0.0.1:0")
 	assert.Nil(t, err, "should be able to listen on random port")
