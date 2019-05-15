@@ -38,6 +38,11 @@ define make-xc-target
 		@xgo -go ${GO_VERSION} -image ${XGO_BASE_IMAGE} -deps ${LIBTOOL_PATH} -targets '${1}-${WINDOWS_API_LEVEL}/${2}' \
 			-ldflags '${LD_FLAGS} -w -extldflags "-static" -extld ${WINDOWS_EXTLD_${2}}' .
 		@mv ghostunnel-${1}-${WINDOWS_API_LEVEL}-${2}.exe dist/ghostunnel-${VERSION}-${1}-${2}-with-pkcs11.exe
+  else ifeq (${1},darwin)
+		@printf "%s%20s %s\n" "-->" "${1}/${2}:" "${PROJECT}"
+		@xgo -go ${GO_VERSION} -image ${XGO_BASE_IMAGE} -deps ${LIBTOOL_PATH} -depsargs '--enable-shared=no' \
+			-ldflags "${LD_FLAGS}" -targets '${1}/${2}' .
+		@mv ghostunnel-${1}*-${2} dist/ghostunnel-${VERSION}-${1}-${2}-with-pkcs11
   else
 		@printf "%s%20s %s\n" "-->" "${1}/${2}:" "${PROJECT}"
 		@xgo -go ${GO_VERSION} -image ${XGO_BASE_IMAGE} -deps ${LIBTOOL_PATH} -ldflags "${LD_FLAGS}" -targets '${1}/${2}' .
